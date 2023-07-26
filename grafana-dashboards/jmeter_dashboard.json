@@ -2705,8 +2705,8 @@
       {
         "current": {
           "selected": false,
-          "text": "Companjon Trainline",
-          "value": "Companjon Trainline"
+          "text": "BBC",
+          "value": "BBC"
         },
         "datasource": {
           "uid": "$data_source"
@@ -2729,8 +2729,8 @@
       {
         "current": {
           "selected": false,
-          "text": "CTL01_NP_01_Authenticate",
-          "value": "CTL01_NP_01_Authenticate"
+          "text": "POC01_NH_01_NavigateToHomepage",
+          "value": "POC01_NH_01_NavigateToHomepage"
         },
         "datasource": {
           "uid": "$data_source"

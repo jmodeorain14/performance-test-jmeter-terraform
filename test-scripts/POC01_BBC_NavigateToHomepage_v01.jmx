@@ -710,6 +710,17 @@ if (!response.contains(&quot;posNo&quot;))
         <stringProp name="filename"></stringProp>
       </ResultCollector>
       <hashTree/>
+      <kg.apc.jmeter.reporters.bzm.BlazeMeterUploader guiclass="kg.apc.jmeter.reporters.bzm.BlazeMeterUploaderGui" testclass="kg.apc.jmeter.reporters.bzm.BlazeMeterUploader" testname="bzm - BlazeMeter Uploader" enabled="true">
+        <elementProp name="arguments" elementType="Arguments">
+          <collectionProp name="Arguments.arguments"/>
+        </elementProp>
+        <stringProp name="classname">kg.apc.jmeter.reporters.bzm.BlazeMeterBackendListenerClient</stringProp>
+        <boolProp name="share">false</boolProp>
+        <stringProp name="title">Terraform JMeter Test</stringProp>
+        <stringProp name="project">Default project</stringProp>
+        <stringProp name="token">123:123</stringProp>
+      </kg.apc.jmeter.reporters.bzm.BlazeMeterUploader>
+      <hashTree/>
     </hashTree>
   </hashTree>
 </jmeterTestPlan>

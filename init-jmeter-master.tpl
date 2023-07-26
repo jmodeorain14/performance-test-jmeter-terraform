@@ -61,6 +61,25 @@ cd /home/ubuntu
 sudo wget https://dlcdn.apache.org//jmeter/binaries/apache-jmeter-5.5.tgz
 sudo tar xvzf apache-jmeter-5.5.tgz
 
+echo "Download CMD Runner in the JMeter lib directory"
+cd /home/ubuntu/apache-jmeter-5.5/lib
+sudo wget https://repo1.maven.org/maven2/kg/apc/cmdrunner/2.3/cmdrunner-2.3.jar
+
+echo "Download JMeter Plugin Manager in the JMeter ext directory"
+cd /home/ubuntu/apache-jmeter-5.5/lib/ext/
+sudo wget https://repo1.maven.org/maven2/kg/apc/jmeter-plugins-manager/1.9/jmeter-plugins-manager-1.9.jar
+
+echo "Install the Plugins Manager"
+sudo java -cp /home/ubuntu/apache-jmeter-5.5/lib/ext/jmeter-plugins-manager-1.9.jar org.jmeterplugins.repository.PluginManagerCMDInstaller
+
+echo "Provide execute permissions to the PluginsManagerCMD.sh file"
+cd /home/ubuntu/apache-jmeter-5.5/bin/
+sudo chmod +x PluginsManagerCMD.sh
+
+echo "Install the BlazeMeter Uploader plugin"
+cd /home/ubuntu/apache-jmeter-5.5/bin/
+sudo ./PluginsManagerCMD.sh install jpgc-sense
+
 # The following jmeter.properties settings are used to limit the size of the .jtl test result file
 echo "Update jmeter.properties"
 cd apache-jmeter-5.5/bin/
@@ -71,7 +90,7 @@ sudo sed -i 's/#jmeter.save.saveservice.data_type=true/jmeter.save.saveservice.d
 sudo sed -i 's/#jmeter.save.saveservice.label=true/jmeter.save.saveservice.label=true/g' jmeter.properties
 sudo sed -i 's/#jmeter.save.saveservice.response_code=true/jmeter.save.saveservice.response_code=true/g' jmeter.properties
 sudo sed -i 's/#jmeter.save.saveservice.response_data.on_error=false/jmeter.save.saveservice.response_data.on_error=false/g' jmeter.properties
-sudo sed -i 's/#jmeter.save.saveservice.response_message=true/jmeter.save.saveservice.response_message=false/g' jmeter.properties
+sudo sed -i 's/#jmeter.save.saveservice.response_message=true/jmeter.save.saveservice.response_message=true/g' jmeter.properties
 sudo sed -i 's/#jmeter.save.saveservice.successful=true/jmeter.save.saveservice.successful=true/g' jmeter.properties
 sudo sed -i 's/#jmeter.save.saveservice.thread_name=true/jmeter.save.saveservice.thread_name=true/g' jmeter.properties
 sudo sed -i 's/#jmeter.save.saveservice.time=true/jmeter.save.saveservice.time=true/g' jmeter.properties
@@ -103,10 +122,12 @@ sudo aws s3 cp "/home/ubuntu/apache-jmeter-5.5/bin/rmi_keystore.jks" "s3://${aws
 echo "Copy the JMeter test script file from the S3 bucket to the EC2 instance"
 sudo aws s3 cp "s3://${aws_s3_bucket_id}/POC01_BBC_NavigateToHomepage_v01.jmx" "/home/ubuntu/apache-jmeter-5.5/bin/"
 
-echo "Create the TestResults folder to store the test results file"
+echo "Create the TestResults and HTML folders to store the test results files"
 cd /home/ubuntu/apache-jmeter-5.5/bin/
 sudo mkdir -p TestResults
 sudo chmod a+w TestResults/
+sudo mkdir -p HTMLReport
+sudo chmod a+w HTMLReport/
 
 # Wait for the JMeter Slave instance to be ready before we execute the test
 sleep 180
@@ -115,15 +136,34 @@ sleep 180
 echo "Generate the current date and timestamp"
 timestamp=$(TZ="Europe/Zurich" date +'%Y-%m-%d_%H-%M-%S')
 
-# Print the JMeter command with options before running it
-echo "Running the JMeter test with the following command:"
-echo "./jmeter -n -t POC01_BBC_NavigateToHomepage_v01.jmx -R \"$jmeter_slaves_list\" -Gthreads1=1 -Grampup1=10 -Giter1=5 -l \"TestResults/${filename}\""
-
 echo "Run the JMeter test"
 echo "Save the results to a file with the timestamp in the filename"
+echo "Create a new HTMLReport folder to store detailed test results"
 cd /home/ubuntu/apache-jmeter-5.5/bin/
 # Use the variable $jmeter_slaves_list as the -R option to pass all JMeter Slave IPs
-sudo ./jmeter -n -t POC01_BBC_NavigateToHomepage_v01.jmx -R "$jmeter_slaves_list" -Gthreads1=1 -Grampup1=10 -Giter1=2 -l "TestResults/${filename}"
+sudo ./jmeter -n -t POC01_BBC_NavigateToHomepage_v01.jmx -R "$jmeter_slaves_list" -Gthreads1=1 -Grampup1=0 -Giter1=1 -l "TestResults/${filename}" -e -o ./HTMLReport
 
-echo "Upload the test results file from the EC2 instance to the S3 bucket"
-sudo aws s3 cp "/home/ubuntu/apache-jmeter-5.5/bin/TestResults/${filename}" "s3://${aws_s3_bucket_id}/test-results/"
+# Check if the JMeter test execution was successful
+if [ $? -eq 0 ]; then
+    echo "L&P test executed successfully."
+
+    # Upload the .jtl file to the S3 bucket
+    echo "Upload the test results file from the EC2 instance to the S3 bucket"
+    sudo aws s3 cp "/home/ubuntu/apache-jmeter-5.5/bin/TestResults/${filename}" "s3://${aws_s3_bucket_id}/test-results/"
+
+    echo "Test results (.jtl) file uploaded to the S3 bucket"
+
+    # Upload the HTML report to the S3 bucket
+    echo "Upload the HTML report folder contents from the EC2 instance to the S3 bucket"
+    sudo aws s3 sync "/home/ubuntu/apache-jmeter-5.5/bin/HTMLReport/" "s3://${aws_s3_bucket_id}/test-results/"
+    
+    echo "HTML report uploaded to the S3 bucket"
+
+    # Signal successful completion of the test
+    touch "test_completed.flag" # Create a flag file
+    echo "export JMETER_TEST_COMPLETED=true" >> /home/ubuntu/env_vars.sh
+
+else
+    echo "L&P test execution failed."
+
+fi
