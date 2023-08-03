@@ -85,6 +85,8 @@ resource "aws_iam_instance_profile" "example" {
 
 # Define the local variables
 locals {
+  init_jmeter_master_script_path   = "./init-scripts/init-jmeter-master.tpl"
+  init_jmeter_slave_script_path    = "./init-scripts/init-jmeter-slave.tpl"
   jmeter_master_public_ip_address  = aws_instance.jmeter_master.public_ip
   jmeter_master_private_ip_address = aws_instance.jmeter_master.private_ip
 
@@ -136,7 +138,7 @@ resource "aws_s3_object" "object" {
 
 # Define the template file for the JMeter Master EC2 instance
 data "template_file" "init-jmeter-master" {
-  template = file("init-jmeter-master.tpl")
+  template = file("${local.init_jmeter_master_script_path}")
 
   vars = {
     timestamp                             = timestamp()                     # Pass the timestamp value to the template
@@ -149,7 +151,7 @@ data "template_file" "init-jmeter-master" {
 
 # Define the template file for the JMeter Slave EC2 instance
 data "template_file" "init-jmeter-slave" {
-  template = file("init-jmeter-slave.tpl")
+  template = file("${local.init_jmeter_slave_script_path}")
 
   vars = {
     aws_s3_bucket_id = aws_s3_bucket.bucket.id

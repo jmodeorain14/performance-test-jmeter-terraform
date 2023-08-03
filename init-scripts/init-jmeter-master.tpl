@@ -141,7 +141,7 @@ echo "Save the results to a file with the timestamp in the filename"
 echo "Create a new HTMLReport folder to store detailed test results"
 cd /home/ubuntu/apache-jmeter-5.5/bin/
 # Use the variable $jmeter_slaves_list as the -R option to pass all JMeter Slave IPs
-sudo ./jmeter -n -t POC01_BBC_NavigateToHomepage_v01.jmx -R "$jmeter_slaves_list" -Gthreads1=1 -Grampup1=0 -Giter1=1 -l "TestResults/${filename}" -e -o ./HTMLReport
+sudo ./jmeter -n -t POC01_BBC_NavigateToHomepage_v01.jmx -R "$jmeter_slaves_list" -Gthreads1=5 -Grampup1=10 -Giter1=100 -l "TestResults/${filename}" -e -o ./HTMLReport
 
 # Check if the JMeter test execution was successful
 if [ $? -eq 0 ]; then
@@ -165,5 +165,4 @@ if [ $? -eq 0 ]; then
 
 else
     echo "L&P test execution failed."
-
 fi
