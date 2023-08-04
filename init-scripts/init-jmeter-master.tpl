@@ -103,7 +103,6 @@ sudo sed -i 's/#jmeter.save.saveservice.thread_counts=true/jmeter.save.saveservi
 sudo sed -i 's/#jmeter.save.saveservice.sample_count=false/jmeter.save.saveservice.sample_count=true/g' jmeter.properties
 sudo sed -i 's/#jmeter.save.saveservice.assertion_results_failure_message=true/jmeter.save.saveservice.assertion_results_failure_message=false/g' jmeter.properties
 sudo sed -i 's/#jmeter.save.saveservice.timestamp_format=yyyy/MM/dd HH:mm:ss.SSS/jmeter.save.saveservice.timestamp_format=yyyy/MM/dd HH:mm:ss.SSS/g' jmeter.properties
-sudo sed -i 's/#jmeter.save.saveservice.default_delimiter=,/jmeter.save.saveservice.default_delimiter=;/g' jmeter.properties
 sudo sed -i 's/#jmeter.save.saveservice.print_field_names=true/jmeter.save.saveservice.print_field_names=true/g' jmeter.properties
 
 echo "Generate the SSL certificate"
@@ -166,3 +165,11 @@ if [ $? -eq 0 ]; then
 else
     echo "L&P test execution failed."
 fi
+
+# Post the test result file to the Jtl Reporter
+echo "Post the test result file to the Jtl Reporter"
+curl -X POST 'http://{Jtl_Reporter_Public_IPv4_Address}:5000/api/projects/jmeterterraformproject/scenarios/jmeterterraformscenario/items' \
+  -H 'x-access-token: {API_token}' \
+  -F "kpi=@/home/ubuntu/apache-jmeter-5.5/bin/TestResults/${filename}" \
+  -F 'environment="Test Environment"' \
+  -F 'note="PoC Test"'
