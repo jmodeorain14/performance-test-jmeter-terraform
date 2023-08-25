@@ -12,9 +12,6 @@ jmeter_slaves_list="${jmeter_slave_private_ip_addresses_str}"
 # Print the content of the private_ip_address variable
 echo "JMeter Master Private IP: \"$jmeter_master_private_ip_address\"" > /etc/jmeter-master-output.tf
 
-echo "Creating a new file on the new EC2 instance"
-echo "Hello, JMeter Master!" > /dev/hellojmetermaster.txt
-
 echo "Update Ubuntu OS"
 sudo apt-get update -y
 
@@ -121,14 +118,14 @@ sudo aws s3 cp "/home/ubuntu/apache-jmeter-5.5/bin/rmi_keystore.jks" "s3://${aws
 echo "Copy the JMeter test script file from the S3 bucket to the EC2 instance"
 sudo aws s3 cp "s3://${aws_s3_bucket_id}/POC01_BBC_NavigateToHomepage_v01.jmx" "/home/ubuntu/apache-jmeter-5.5/bin/"
 
-echo "Create the TestResults and HTML folders to store the test results files"
+echo "Create the TestResults and HTMLReport folders to store the test results files"
 cd /home/ubuntu/apache-jmeter-5.5/bin/
 sudo mkdir -p TestResults
 sudo chmod a+w TestResults/
 sudo mkdir -p HTMLReport
 sudo chmod a+w HTMLReport/
 
-# Wait for the JMeter Slave instance to be ready before we execute the test
+# Wait for the JMeter Slave instance(s) to be ready before we execute the test
 sleep 180
 
 # Set the desired timezone and get the current date and time in the required format
@@ -137,9 +134,10 @@ timestamp=$(TZ="Europe/Zurich" date +'%Y-%m-%d_%H-%M-%S')
 
 echo "Run the JMeter test"
 echo "Save the results to a file with the timestamp in the filename"
-echo "Create a new HTMLReport folder to store detailed test results"
 cd /home/ubuntu/apache-jmeter-5.5/bin/
 # Use the variable $jmeter_slaves_list as the -R option to pass all JMeter Slave IPs
+# -e flag generates the report
+# -o flag specifies the output directory where the HTML report will be saved
 sudo ./jmeter -n -t POC01_BBC_NavigateToHomepage_v01.jmx -R "$jmeter_slaves_list" -Gthreads1=5 -Grampup1=10 -Giter1=100 -l "TestResults/${filename}" -e -o ./HTMLReport
 
 # Check if the JMeter test execution was successful

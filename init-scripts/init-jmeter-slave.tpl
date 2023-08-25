@@ -6,9 +6,6 @@ private_ip_address=$(hostname -I | awk '{print $1}')
 # Print the contents of the private_ip_address variable
 echo "Private IP Address: $private_ip_address"
 
-echo "Creating a new file on the new EC2 instance"
-echo "Hello, JMeter Slave!" > /dev/hellojmeterslave.txt
-
 echo "Update Ubuntu OS"
 sudo apt-get update -y
 
