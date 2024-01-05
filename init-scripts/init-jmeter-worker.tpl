@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Retrieve the private IP address of the JMeter Slave instance
+# Retrieve the private IP address of the JMeter worker instance
 private_ip_address=$(hostname -I | awk '{print $1}')
 
 # Print the contents of the private_ip_address variable
