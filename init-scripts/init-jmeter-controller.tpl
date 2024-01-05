@@ -1,16 +1,16 @@
 #!/bin/bash
 
-# Retrieve the private IP address of the JMeter master EC2 instance
-jmeter_master_private_ip_address=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
+# Retrieve the private IP address of the JMeter controller EC2 instance
+jmeter_controller_private_ip_address=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
 
-# Retrieve the value of the jmeter_slave_count variable
-jmeter_slave_count=${jmeter_slave_count}
+# Retrieve the value of the jmeter_worker_count variable
+jmeter_worker_count=${jmeter_worker_count}
 
-# Get the list of the private IP addresses of the JMeter slave EC2 instances
-jmeter_slaves_list="${jmeter_slave_private_ip_addresses_str}"
+# Get the list of the private IP addresses of the JMeter worker EC2 instances
+jmeter_workers_list="${jmeter_worker_private_ip_addresses_str}"
 
 # Print the content of the private_ip_address variable
-echo "JMeter Master Private IP: \"$jmeter_master_private_ip_address\"" > /etc/jmeter-master-output.tf
+echo "JMeter Controller Private IP: \"$jmeter_controller_private_ip_address\"" > /etc/jmeter-controller-output.tf
 
 echo "Update Ubuntu OS"
 sudo apt-get update -y
@@ -125,7 +125,7 @@ sudo chmod a+w TestResults/
 sudo mkdir -p HTMLReport
 sudo chmod a+w HTMLReport/
 
-# Wait for the JMeter Slave instance(s) to be ready before we execute the test
+# Wait for the JMeter Worker instance(s) to be ready before we execute the test
 sleep 180
 
 # Set the desired timezone and get the current date and time in the required format
@@ -135,10 +135,10 @@ timestamp=$(TZ="Europe/Zurich" date +'%Y-%m-%d_%H-%M-%S')
 echo "Run the JMeter test"
 echo "Save the results to a file with the timestamp in the filename"
 cd /home/ubuntu/apache-jmeter-5.5/bin/
-# Use the variable $jmeter_slaves_list as the -R option to pass all JMeter Slave IPs
+# Use the variable $jmeter_workers_list as the -R option to pass all JMeter worker IPs
 # -e flag generates the report
 # -o flag specifies the output directory where the HTML report will be saved
-sudo ./jmeter -n -t POC01_BBC_NavigateToHomepage_v01.jmx -R "$jmeter_slaves_list" -Gthreads1=5 -Grampup1=10 -Giter1=100 -l "TestResults/${filename}" -e -o ./HTMLReport
+sudo ./jmeter -n -t POC01_BBC_NavigateToHomepage_v01.jmx -R "$jmeter_workers_list" -Gthreads1=5 -Grampup1=10 -Giter1=100 -l "TestResults/${filename}" -e -o ./HTMLReport
 
 # Check if the JMeter test execution was successful
 if [ $? -eq 0 ]; then
