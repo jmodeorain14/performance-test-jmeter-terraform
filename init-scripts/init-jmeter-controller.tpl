@@ -125,7 +125,7 @@ sudo chmod a+w TestResults/
 sudo mkdir -p HTMLReport
 sudo chmod a+w HTMLReport/
 
-# Wait for the JMeter Worker instance(s) to be ready before we execute the test
+# Wait for the JMeter worker instance(s) to be ready before we execute the test
 sleep 180
 
 # Set the desired timezone and get the current date and time in the required format
@@ -171,3 +171,4 @@ curl -X POST 'http://{Jtl_Reporter_Public_IPv4_Address}:5000/api/projects/jmeter
   -F "kpi=@/home/ubuntu/apache-jmeter-5.5/bin/TestResults/${filename}" \
   -F 'environment="Test Environment"' \
   -F 'note="PoC Test"'
+  
