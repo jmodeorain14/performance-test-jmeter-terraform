@@ -48,7 +48,7 @@ resource "grafana_data_source" "influxdb" {
 
   type               = "influxdb"
   name               = "InfluxDB"
-  url                = "http://${aws_eip.jmeter_master-EIP.public_ip}:8086" # Public IP address of the JMeter Master EC2 instance
+  url                = "http://${aws_eip.jmeter_controller-EIP.public_ip}:8086" # Public IP address of the JMeter controller EC2 instance
   database_name      = "jmeter"
   basic_auth_enabled = false
   is_default         = false
