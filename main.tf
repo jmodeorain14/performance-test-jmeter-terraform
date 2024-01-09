@@ -1,4 +1,4 @@
-# Create a security group to enable communication between the JMeter Master and JMeter Slave EC2 instances
+# Create a security group to enable communication between the JMeter controller and JMeter worker EC2 instances
 resource "aws_security_group" "sg-jmeter" {
   vpc_id      = aws_vpc.vpc.id
   name        = "jmeter-security-group"
@@ -85,24 +85,24 @@ resource "aws_iam_instance_profile" "example" {
 
 # Define the local variables
 locals {
-  init_jmeter_master_script_path   = "./init-scripts/init-jmeter-master.tpl"
-  init_jmeter_slave_script_path    = "./init-scripts/init-jmeter-slave.tpl"
-  jmeter_master_public_ip_address  = aws_instance.jmeter_master.public_ip
-  jmeter_master_private_ip_address = aws_instance.jmeter_master.private_ip
+  init_jmeter_controller_script_path   = "./init-scripts/init-jmeter-controller.tpl"
+  init_jmeter_worker_script_path    = "./init-scripts/init-jmeter-worker.tpl"
+  jmeter_controller_public_ip_address  = aws_instance.jmeter_controller.public_ip
+  jmeter_controller_private_ip_address = aws_instance.jmeter_controller.private_ip
 
-  # Convert the list of JMeter slave EC2 instances to a map with private IP as the key
-  jmeter_slave_instances = {
-    for idx, instance in aws_instance.jmeter_slave : instance.private_ip => {
+  # Convert the list of JMeter worker EC2 instances to a map with private IP as the key
+  jmeter_worker_instances = {
+    for idx, instance in aws_instance.jmeter_worker : instance.private_ip => {
       instance_id   = instance.id
-      allocation_id = aws_eip.jmeter_slave-EIP[idx].id
+      allocation_id = aws_eip.jmeter_worker-EIP[idx].id
     }
   }
 
-  # Convert the map of JMeter slave EC2 instances to a comma-separated string of private IP addresses
-  jmeter_slave_private_ip_addresses_str = join(",", keys(local.jmeter_slave_instances))
+  # Convert the map of JMeter worker EC2 instances to a comma-separated string of private IP addresses
+  jmeter_worker_private_ip_addresses_str = join(",", keys(local.jmeter_worker_instances))
 
   # Alternatively, you can use the values of the map if needed (e.g., to get a list of EC2 instance objects)
-  jmeter_slave_instances_list = values(local.jmeter_slave_instances)
+  jmeter_worker_instances_list = values(local.jmeter_worker_instances)
 }
 
 # Create a bucket
@@ -136,22 +136,22 @@ resource "aws_s3_object" "object" {
   source = "./test-scripts/POC01_BBC_NavigateToHomepage_v01.jmx" # Path to the test script file
 }
 
-# Define the template file for the JMeter Master EC2 instance
-data "template_file" "init-jmeter-master" {
-  template = file("${local.init_jmeter_master_script_path}")
+# Define the template file for the JMeter controller EC2 instance
+data "template_file" "init-jmeter-controller" {
+  template = file("${local.init_jmeter_controller_script_path}")
 
   vars = {
     timestamp                             = timestamp()                     # Pass the timestamp value to the template
     filename                              = "Test_Result_$${timestamp}.jtl" # Use double $$ to escape the ${timestamp} placeholder
     aws_s3_bucket_id                      = aws_s3_bucket.bucket.id
-    jmeter_slave_count                    = var.jmeter_slave_count
-    jmeter_slave_private_ip_addresses_str = "${local.jmeter_slave_private_ip_addresses_str}"
+    jmeter_worker_count                    = var.jmeter_worker_count
+    jmeter_worker_private_ip_addresses_str = "${local.jmeter_worker_private_ip_addresses_str}"
   }
 }
 
-# Define the template file for the JMeter Slave EC2 instance
-data "template_file" "init-jmeter-slave" {
-  template = file("${local.init_jmeter_slave_script_path}")
+# Define the template file for the JMeter worker EC2 instance
+data "template_file" "init-jmeter-worker" {
+  template = file("${local.init_jmeter_worker_script_path}")
 
   vars = {
     aws_s3_bucket_id = aws_s3_bucket.bucket.id
@@ -160,8 +160,8 @@ data "template_file" "init-jmeter-slave" {
 
 # Create EC2 instances
 
-# Specify the name and size of the EC2 instance for the JMeter Master
-resource "aws_instance" "jmeter_master" {
+# Specify the name and size of the EC2 instance for the JMeter controller
+resource "aws_instance" "jmeter_controller" {
   ami                         = data.aws_ami.ubuntu-linux-2204.id
   instance_type               = var.ec2_instance_type
   subnet_id                   = aws_subnet.public-subnet.id
@@ -186,31 +186,31 @@ resource "aws_instance" "jmeter_master" {
   }
 
   tags = {
-    Name = "JMeter Master" # Add a name to the respective EC2 instance
+    Name = "JMeter Controller" # Add a name to the respective EC2 instance
   }
 
   # Specify what will happen on the EC2 instance once it has been created
-  user_data = data.template_file.init-jmeter-master.rendered
+  user_data = data.template_file.init-jmeter-controller.rendered
 }
 
 # Create Elastic IP for the EC2 instance
-resource "aws_eip" "jmeter_master-EIP" {
+resource "aws_eip" "jmeter_controller-EIP" {
   provider = aws
-  instance = aws_instance.jmeter_master.id
+  instance = aws_instance.jmeter_controller.id
   tags = {
-    Name = "jmeter_master-EIP"
+    Name = "jmeter_controller-EIP"
   }
 }
 
 # Associate Elastic IP to Linux server
-resource "aws_eip_association" "jmeter_master-EIP-Association" {
-  instance_id   = aws_instance.jmeter_master.id
-  allocation_id = aws_eip.jmeter_master-EIP.id
+resource "aws_eip_association" "jmeter_controller-EIP-Association" {
+  instance_id   = aws_instance.jmeter_controller.id
+  allocation_id = aws_eip.jmeter_controller-EIP.id
 }
 
-# Specify the name and size of the EC2 instance for the JMeter Slave
-resource "aws_instance" "jmeter_slave" {
-  count                       = var.jmeter_slave_count # Specify the number of JMeter slave EC2 instances to create
+# Specify the name and size of the EC2 instance for the JMeter worker
+resource "aws_instance" "jmeter_worker" {
+  count                       = var.jmeter_worker_count # Specify the number of JMeter worker EC2 instances to create
   ami                         = data.aws_ami.ubuntu-linux-2204.id
   instance_type               = var.ec2_instance_type
   subnet_id                   = aws_subnet.public-subnet.id
@@ -235,25 +235,25 @@ resource "aws_instance" "jmeter_slave" {
   }
 
   tags = {
-    Name = "JMeter-Slave-${count.index + 1}" # Add a unique name to the respective EC2 instance
+    Name = "JMeter-Worker-${count.index + 1}" # Add a unique name to the respective EC2 instance
   }
 
   # Specify what will happen on the EC2 instance once it has been created
-  user_data = data.template_file.init-jmeter-slave.rendered
+  user_data = data.template_file.init-jmeter-worker.rendered
 }
 
 # Create Elastic IP for the EC2 instance
-resource "aws_eip" "jmeter_slave-EIP" {
-  count = var.jmeter_slave_count
+resource "aws_eip" "jmeter_worker-EIP" {
+  count = var.jmeter_worker_count
   #provider = aws
   tags = {
-    Name = "jmeter_slave-EIP-${count.index + 1}"
+    Name = "jmeter_worker-EIP-${count.index + 1}"
   }
 }
 
 # Associate Elastic IP to Linux server
-resource "aws_eip_association" "jmeter_slave-EIP-Association" {
-  count         = var.jmeter_slave_count
-  instance_id   = element(aws_instance.jmeter_slave.*.id, count.index)
-  allocation_id = element(aws_eip.jmeter_slave-EIP.*.id, count.index)
+resource "aws_eip_association" "jmeter_worker-EIP-Association" {
+  count         = var.jmeter_worker_count
+  instance_id   = element(aws_instance.jmeter_worker.*.id, count.index)
+  allocation_id = element(aws_eip.jmeter_worker-EIP.*.id, count.index)
 }
