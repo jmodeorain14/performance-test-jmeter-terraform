@@ -20,10 +20,10 @@ variable "outbound_rules" {
   }))
 }
 
-variable "jmeter_slave_count" {
+variable "jmeter_worker_count" {
   type        = number
-  description = "Number of JMeter Slave EC2 instances to create"
-  default     = 1 # This can be changed during the "terraform apply" command, e.g. terraform apply -var "jmeter_slave_count=3"
+  description = "Number of JMeter worker EC2 instances to create"
+  default     = 1 # This can be changed during the "terraform apply" command, e.g. terraform apply -var "jmeter_worker_count=3"
 }
 
 variable "ec2_instance_type" {
