@@ -710,7 +710,7 @@ if (!response.contains(&quot;posNo&quot;))
         <stringProp name="filename"></stringProp>
       </ResultCollector>
       <hashTree/>
-      <kg.apc.jmeter.reporters.bzm.BlazeMeterUploader guiclass="kg.apc.jmeter.reporters.bzm.BlazeMeterUploaderGui" testclass="kg.apc.jmeter.reporters.bzm.BlazeMeterUploader" testname="bzm - BlazeMeter Uploader" enabled="true">
+      <kg.apc.jmeter.reporters.bzm.BlazeMeterUploader guiclass="kg.apc.jmeter.reporters.bzm.BlazeMeterUploaderGui" testclass="kg.apc.jmeter.reporters.bzm.BlazeMeterUploader" testname="bzm - BlazeMeter Uploader" enabled="false">
         <elementProp name="arguments" elementType="Arguments">
           <collectionProp name="Arguments.arguments"/>
         </elementProp>
