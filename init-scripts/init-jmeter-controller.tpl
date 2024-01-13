@@ -171,4 +171,3 @@ curl -X POST 'http://{Jtl_Reporter_Public_IPv4_Address}:5000/api/projects/jmeter
   -F "kpi=@/home/ubuntu/apache-jmeter-5.5/bin/TestResults/${filename}" \
   -F 'environment="Test Environment"' \
   -F 'note="PoC Test"'
-  
