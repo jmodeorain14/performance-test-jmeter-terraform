@@ -86,7 +86,7 @@ resource "aws_iam_instance_profile" "example" {
 # Define the local variables
 locals {
   init_jmeter_controller_script_path   = "./init-scripts/init-jmeter-controller.tpl"
-  init_jmeter_worker_script_path    = "./init-scripts/init-jmeter-worker.tpl"
+  init_jmeter_worker_script_path       = "./init-scripts/init-jmeter-worker.tpl"
   jmeter_controller_public_ip_address  = aws_instance.jmeter_controller.public_ip
   jmeter_controller_private_ip_address = aws_instance.jmeter_controller.private_ip
 
@@ -141,9 +141,9 @@ data "template_file" "init-jmeter-controller" {
   template = file("${local.init_jmeter_controller_script_path}")
 
   vars = {
-    timestamp                             = timestamp()                     # Pass the timestamp value to the template
-    filename                              = "Test_Result_$${timestamp}.jtl" # Use double $$ to escape the ${timestamp} placeholder
-    aws_s3_bucket_id                      = aws_s3_bucket.bucket.id
+    timestamp                              = timestamp()                     # Pass the timestamp value to the template
+    filename                               = "Test_Result_$${timestamp}.jtl" # Use double $$ to escape the ${timestamp} placeholder
+    aws_s3_bucket_id                       = aws_s3_bucket.bucket.id
     jmeter_worker_count                    = var.jmeter_worker_count
     jmeter_worker_private_ip_addresses_str = "${local.jmeter_worker_private_ip_addresses_str}"
   }
