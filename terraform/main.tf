@@ -4,8 +4,7 @@ resource "aws_security_group" "sg-jmeter" {
   name        = "jmeter-security-group"
   description = "Security group for EC2 instances"
 
-  # Create inbound (ingress) and outbound (egress) rules within the security group
-
+  # Create inbound (ingress) rules within the security group
   dynamic "ingress" {
     for_each = var.inbound_rules
 
@@ -18,6 +17,7 @@ resource "aws_security_group" "sg-jmeter" {
     }
   }
 
+  # Create outbound (egress) rules within the security group 
   dynamic "egress" {
     for_each = var.outbound_rules
 
