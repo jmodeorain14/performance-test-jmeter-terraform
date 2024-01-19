@@ -38,7 +38,7 @@ resource "grafana_folder" "my_folder" {
 resource "grafana_dashboard" "dashboard" {
   provider = grafana.my_stack
 
-  config_json = file("./grafana-dashboards/jmeter-dashboard.json")
+  config_json = file("../grafana-dashboards/jmeter-dashboard.json")
   folder      = grafana_folder.my_folder.id
 }
 
