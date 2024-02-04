@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.2">
   <hashTree>
-    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="POC01_BBC_NavigateToHomepage_v01" enabled="true">
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="POC01_BBC_NavigateToHomepage_v02" enabled="true">
       <boolProp name="TestPlan.functional_mode">false</boolProp>
       <boolProp name="TestPlan.tearDown_on_shutdown">true</boolProp>
       <boolProp name="TestPlan.serialize_threadgroups">true</boolProp>
@@ -70,20 +70,6 @@
           <stringProp name="TestPlan.comments">This request navigates to the BBC homepage.</stringProp>
         </HTTPSamplerProxy>
         <hashTree>
-          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="JSON Extractor - cAccessToken" enabled="false">
-            <stringProp name="JSONPostProcessor.referenceNames">cAccessToken</stringProp>
-            <stringProp name="JSONPostProcessor.jsonPathExprs">$.access_token</stringProp>
-            <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
-            <stringProp name="JSONPostProcessor.defaultValues">cAccessTokenNotFound</stringProp>
-          </JSONPostProcessor>
-          <hashTree/>
-          <BeanShellAssertion guiclass="BeanShellAssertionGui" testclass="BeanShellAssertion" testname="BeanShell Assertion" enabled="false">
-            <stringProp name="BeanShellAssertion.query">${__setProperty(cAccessToken,${cAccessToken})}</stringProp>
-            <stringProp name="BeanShellAssertion.filename"></stringProp>
-            <stringProp name="BeanShellAssertion.parameters"></stringProp>
-            <boolProp name="BeanShellAssertion.resetInterpreter">false</boolProp>
-          </BeanShellAssertion>
-          <hashTree/>
           <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="JSR223 Assertion" enabled="true">
             <stringProp name="TestPlan.comments">Verifies that the response for the Navigate To Homepage HTTP request is as expected.</stringProp>
             <stringProp name="cacheKey">true</stringProp>
