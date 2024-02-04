@@ -116,7 +116,7 @@ echo "Upload the SSL certificate file from the EC2 instance to the S3 bucket"
 sudo aws s3 cp "/home/ubuntu/apache-jmeter-5.5/bin/rmi_keystore.jks" "s3://${aws_s3_bucket_id}/rmi_keystore.jks"
 
 echo "Copy the JMeter test script file from the S3 bucket to the EC2 instance"
-sudo aws s3 cp "s3://${aws_s3_bucket_id}/POC01_BBC_NavigateToHomepage_v01.jmx" "/home/ubuntu/apache-jmeter-5.5/bin/"
+sudo aws s3 cp "s3://${aws_s3_bucket_id}/POC01_BBC_NavigateToHomepage_v02.jmx" "/home/ubuntu/apache-jmeter-5.5/bin/"
 
 echo "Create the TestResults and HTMLReport folders to store the test results files"
 cd /home/ubuntu/apache-jmeter-5.5/bin/
@@ -138,7 +138,7 @@ cd /home/ubuntu/apache-jmeter-5.5/bin/
 # Use the variable $jmeter_workers_list as the -R option to pass all JMeter worker IPs
 # -e flag generates the report
 # -o flag specifies the output directory where the HTML report will be saved
-sudo ./jmeter -n -t POC01_BBC_NavigateToHomepage_v01.jmx -R "$jmeter_workers_list" -Gthreads1=5 -Grampup1=10 -Giter1=100 -l "TestResults/${filename}" -e -o ./HTMLReport
+sudo ./jmeter -n -t POC01_BBC_NavigateToHomepage_v02.jmx -R "$jmeter_workers_list" -Gthreads1=5 -Grampup1=10 -Giter1=100 -l "TestResults/${filename}" -e -o ./HTMLReport
 
 # Check if the JMeter test execution was successful
 if [ $? -eq 0 ]; then
