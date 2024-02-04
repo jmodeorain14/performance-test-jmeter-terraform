@@ -58,25 +58,6 @@ cd /home/ubuntu
 sudo wget https://dlcdn.apache.org//jmeter/binaries/apache-jmeter-5.5.tgz
 sudo tar xvzf apache-jmeter-5.5.tgz
 
-echo "Download CMD Runner in the JMeter lib directory"
-cd /home/ubuntu/apache-jmeter-5.5/lib
-sudo wget https://repo1.maven.org/maven2/kg/apc/cmdrunner/2.3/cmdrunner-2.3.jar
-
-echo "Download JMeter Plugin Manager in the JMeter ext directory"
-cd /home/ubuntu/apache-jmeter-5.5/lib/ext/
-sudo wget https://repo1.maven.org/maven2/kg/apc/jmeter-plugins-manager/1.9/jmeter-plugins-manager-1.9.jar
-
-echo "Install the Plugins Manager"
-sudo java -cp /home/ubuntu/apache-jmeter-5.5/lib/ext/jmeter-plugins-manager-1.9.jar org.jmeterplugins.repository.PluginManagerCMDInstaller
-
-echo "Provide execute permissions to the PluginsManagerCMD.sh file"
-cd /home/ubuntu/apache-jmeter-5.5/bin/
-sudo chmod +x PluginsManagerCMD.sh
-
-echo "Install the BlazeMeter Uploader plugin"
-cd /home/ubuntu/apache-jmeter-5.5/bin/
-sudo ./PluginsManagerCMD.sh install jpgc-sense
-
 # The following jmeter.properties settings are used to limit the size of the .jtl test result file
 echo "Update jmeter.properties"
 cd apache-jmeter-5.5/bin/
