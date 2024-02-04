@@ -85,8 +85,8 @@ resource "aws_iam_instance_profile" "example" {
 
 # Define the local variables
 locals {
-  init_jmeter_controller_script_path   = "./init-scripts/init-jmeter-controller.tpl"
-  init_jmeter_worker_script_path       = "./init-scripts/init-jmeter-worker.tpl"
+  init_jmeter_controller_script_path   = "../init-scripts/init-jmeter-controller.tpl"
+  init_jmeter_worker_script_path       = "../init-scripts/init-jmeter-worker.tpl"
   jmeter_controller_public_ip_address  = aws_instance.jmeter_controller.public_ip
   jmeter_controller_private_ip_address = aws_instance.jmeter_controller.private_ip
 
