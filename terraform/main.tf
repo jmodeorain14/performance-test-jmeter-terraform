@@ -132,8 +132,8 @@ resource "aws_s3_bucket_acl" "example" {
 # Upload the JMeter test script file to the S3 bucket
 resource "aws_s3_object" "object" {
   bucket = aws_s3_bucket.bucket.id
-  key    = "POC01_BBC_NavigateToHomepage_v01.jmx"                 # Specify the desired key/name for the object in the S3 bucket
-  source = "../test-scripts/POC01_BBC_NavigateToHomepage_v01.jmx" # Path to the test script file
+  key    = "POC01_BBC_NavigateToHomepage_v02.jmx"                 # Specify the desired key/name for the object in the S3 bucket
+  source = "../test-scripts/POC01_BBC_NavigateToHomepage_v02.jmx" # Path to the test script file
 }
 
 # Define the template file for the JMeter controller EC2 instance
