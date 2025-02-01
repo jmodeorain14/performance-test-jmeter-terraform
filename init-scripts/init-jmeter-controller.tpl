@@ -55,12 +55,12 @@ sudo /bin/systemctl start grafana-server
 
 echo "Download JMeter"
 cd /home/ubuntu
-sudo wget https://dlcdn.apache.org//jmeter/binaries/apache-jmeter-5.5.tgz
-sudo tar xvzf apache-jmeter-5.5.tgz
+sudo wget https://dlcdn.apache.org//jmeter/binaries/apache-jmeter-5.6.3.tgz
+sudo tar xvzf apache-jmeter-5.6.3.tgz
 
 # The following jmeter.properties settings are used to limit the size of the .jtl test result file
 echo "Update jmeter.properties"
-cd apache-jmeter-5.5/bin/
+cd apache-jmeter-5.6.3/bin/
 sudo sed -i 's/#server_port=1099/server_port=1099/g' jmeter.properties
 sudo sed -i 's/#server.rmi.localport=4000/server.rmi.localport=4000/g' jmeter.properties
 sudo sed -i 's/#jmeter.save.saveservice.output_format=csv/jmeter.save.saveservice.output_format=csv/g' jmeter.properties
@@ -90,17 +90,17 @@ orgName="unknown"
 city="unknown"
 state="unknown"
 countryCode="unknown"
-cd apache-jmeter-5.5/bin
+cd apache-jmeter-5.6.3/bin
 sudo keytool -genkey -alias rmi -keyalg RSA -keystore rmi_keystore.jks -validity 7 -keysize 2048 -storepass changeit -dname "CN=$name, OU=$orgUnit, O=$orgName, L=$city, ST=$state, C=$countryCode"
 
 echo "Upload the SSL certificate file from the EC2 instance to the S3 bucket"
-sudo aws s3 cp "/home/ubuntu/apache-jmeter-5.5/bin/rmi_keystore.jks" "s3://${aws_s3_bucket_id}/rmi_keystore.jks"
+sudo aws s3 cp "/home/ubuntu/apache-jmeter-5.6.3/bin/rmi_keystore.jks" "s3://${aws_s3_bucket_id}/rmi_keystore.jks"
 
 echo "Copy the JMeter test script file from the S3 bucket to the EC2 instance"
-sudo aws s3 cp "s3://${aws_s3_bucket_id}/POC01_BBC_NavigateToHomepage_v02.jmx" "/home/ubuntu/apache-jmeter-5.5/bin/"
+sudo aws s3 cp "s3://${aws_s3_bucket_id}/POC01_BBC_NavigateToHomepage_v02.jmx" "/home/ubuntu/apache-jmeter-5.6.3/bin/"
 
 echo "Create the TestResults and HTMLReport folders to store the test results files"
-cd /home/ubuntu/apache-jmeter-5.5/bin/
+cd /home/ubuntu/apache-jmeter-5.6.3/bin/
 sudo mkdir -p TestResults
 sudo chmod a+w TestResults/
 sudo mkdir -p HTMLReport
@@ -115,7 +115,7 @@ timestamp=$(TZ="Europe/Zurich" date +'%Y-%m-%d_%H-%M-%S')
 
 echo "Run the JMeter test"
 echo "Save the results to a file with the timestamp in the filename"
-cd /home/ubuntu/apache-jmeter-5.5/bin/
+cd /home/ubuntu/apache-jmeter-5.6.3/bin/
 # Use the variable $jmeter_workers_list as the -R option to pass all JMeter worker IPs
 # -e flag generates the report
 # -o flag specifies the output directory where the HTML report will be saved
@@ -127,13 +127,13 @@ if [ $? -eq 0 ]; then
 
     # Upload the .jtl file to the S3 bucket
     echo "Upload the test results file from the EC2 instance to the S3 bucket"
-    sudo aws s3 cp "/home/ubuntu/apache-jmeter-5.5/bin/TestResults/${filename}" "s3://${aws_s3_bucket_id}/test-results/"
+    sudo aws s3 cp "/home/ubuntu/apache-jmeter-5.6.3/bin/TestResults/${filename}" "s3://${aws_s3_bucket_id}/test-results/"
 
     echo "Test results (.jtl) file uploaded to the S3 bucket"
 
     # Upload the HTML report to the S3 bucket
     echo "Upload the HTML report folder contents from the EC2 instance to the S3 bucket"
-    sudo aws s3 sync "/home/ubuntu/apache-jmeter-5.5/bin/HTMLReport/" "s3://${aws_s3_bucket_id}/test-results/"
+    sudo aws s3 sync "/home/ubuntu/apache-jmeter-5.6.3/bin/HTMLReport/" "s3://${aws_s3_bucket_id}/test-results/"
     
     echo "HTML report uploaded to the S3 bucket"
 
@@ -149,6 +149,6 @@ fi
 echo "Post the test result file to the Jtl Reporter"
 curl -X POST 'http://{Jtl_Reporter_Public_IPv4_Address}:5000/api/projects/jmeterterraformproject/scenarios/jmeterterraformscenario/items' \
   -H 'x-access-token: {API_token}' \
-  -F "kpi=@/home/ubuntu/apache-jmeter-5.5/bin/TestResults/${filename}" \
+  -F "kpi=@/home/ubuntu/apache-jmeter-5.6.3/bin/TestResults/${filename}" \
   -F 'environment="Test Environment"' \
   -F 'note="PoC Test"'
