@@ -85,8 +85,11 @@ resource "aws_iam_instance_profile" "example" {
 
 # Define the local variables
 locals {
-  init_jmeter_controller_script_path   = "../init-scripts/init-jmeter-controller.tpl"
-  init_jmeter_worker_script_path       = "../init-scripts/init-jmeter-worker.tpl"
+  # Paths to initalization scripts
+  init_jmeter_controller_script_path = "../init-scripts/init-jmeter-controller.tpl"
+  init_jmeter_worker_script_path     = "../init-scripts/init-jmeter-worker.tpl"
+
+  # JMeter Controller IP addresses
   jmeter_controller_public_ip_address  = aws_instance.jmeter_controller.public_ip
   jmeter_controller_private_ip_address = aws_instance.jmeter_controller.private_ip
 
@@ -103,6 +106,20 @@ locals {
 
   # Alternatively, you can use the values of the map if needed (e.g., to get a list of EC2 instance objects)
   jmeter_worker_instances_list = values(local.jmeter_worker_instances)
+
+  # Define the template content for the JMeter controller EC2 instance
+  init_jmeter_controller = templatefile("${local.init_jmeter_controller_script_path}", {
+    timestamp                              = timestamp()                      # Pass the timestamp value to the template
+    filename                               = "Test_Result_${timestamp()}.jtl" # No need to escape with $${timestamp} in templatefile
+    aws_s3_bucket_id                       = aws_s3_bucket.bucket.id
+    jmeter_worker_count                    = var.jmeter_worker_count
+    jmeter_worker_private_ip_addresses_str = local.jmeter_worker_private_ip_addresses_str
+  })
+
+  # Define the template content for the JMeter worker EC2 instance
+  init_jmeter_worker = templatefile("${local.init_jmeter_worker_script_path}", {
+    aws_s3_bucket_id = aws_s3_bucket.bucket.id
+  })
 }
 
 # Create a bucket
@@ -134,28 +151,6 @@ resource "aws_s3_object" "object" {
   bucket = aws_s3_bucket.bucket.id
   key    = "POC01_BBC_NavigateToHomepage_v02.jmx"                 # Specify the desired key/name for the object in the S3 bucket
   source = "../test-scripts/POC01_BBC_NavigateToHomepage_v02.jmx" # Path to the test script file
-}
-
-# Define the template file for the JMeter controller EC2 instance
-data "template_file" "init-jmeter-controller" {
-  template = file("${local.init_jmeter_controller_script_path}")
-
-  vars = {
-    timestamp                              = timestamp()                     # Pass the timestamp value to the template
-    filename                               = "Test_Result_$${timestamp}.jtl" # Use double $$ to escape the ${timestamp} placeholder
-    aws_s3_bucket_id                       = aws_s3_bucket.bucket.id
-    jmeter_worker_count                    = var.jmeter_worker_count
-    jmeter_worker_private_ip_addresses_str = "${local.jmeter_worker_private_ip_addresses_str}"
-  }
-}
-
-# Define the template file for the JMeter worker EC2 instance
-data "template_file" "init-jmeter-worker" {
-  template = file("${local.init_jmeter_worker_script_path}")
-
-  vars = {
-    aws_s3_bucket_id = aws_s3_bucket.bucket.id
-  }
 }
 
 # Create EC2 instances
@@ -190,7 +185,7 @@ resource "aws_instance" "jmeter_controller" {
   }
 
   # Specify what will happen on the EC2 instance once it has been created
-  user_data = data.template_file.init-jmeter-controller.rendered
+  user_data = local.init_jmeter_controller
 }
 
 # Create Elastic IP for the EC2 instance
@@ -239,7 +234,7 @@ resource "aws_instance" "jmeter_worker" {
   }
 
   # Specify what will happen on the EC2 instance once it has been created
-  user_data = data.template_file.init-jmeter-worker.rendered
+  user_data = local.init_jmeter_worker
 }
 
 # Create Elastic IP for the EC2 instance
